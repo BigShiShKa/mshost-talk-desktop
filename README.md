@@ -3,7 +3,24 @@
   - SPDX-License-Identifier: CC0-1.0
 -->
 
-# Nextcloud Talk Desktop
+# MSHost Talk Desktop
+
+Брендированная Windows x64 alpha-сборка `2.3.4-alpha.3` на основе Nextcloud Talk
+Desktop `v2.3.4`. Сервер по умолчанию: https://cloud.mshostcloud.org.
+
+[Брендинг, сборка и проверки MSHost](docs/mshost/README.md).
+Установщик, ZIP для запуска без установки, исходники и SHA-256:
+`D:\MSHost\Builds\TalkDesktop\dist\2.3.4-alpha.3`.
+
+Реализация MSHost находится в ветке [`mshost`](https://github.com/BigShiShKa/mshost-talk-desktop/tree/mshost).
+Ветка `main` сохраняет upstream. Сборки доступны после входа на
+[MSHost Cloud](https://cloud.mshostcloud.org/apps/mshost_clients/).
+Состояние и ограничения: [эксплуатационная документация](https://github.com/BigShiShKa/MSHost-Docs).
+
+Ниже сохранена исходная документация Nextcloud. Её ссылки на официальные сборки
+и статусы CI относятся к upstream, а не к MSHost.
+
+## Nextcloud Talk Desktop — upstream
 
 [![REUSE status](https://api.reuse.software/badge/github.com/nextcloud/talk-desktop)](https://api.reuse.software/info/github.com/nextcloud/talk-desktop)
 [![GitHub Release Stable](https://img.shields.io/github/v/release/nextcloud-releases/talk-desktop?sort=semver&display_name=tag&style=flat)](https://github.com/nextcloud-releases/talk-desktop/releases/latest)

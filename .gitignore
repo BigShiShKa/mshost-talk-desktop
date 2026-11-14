@@ -9,6 +9,9 @@ spreed/
 
 # Overrides
 .overrides/
+!.overrides/
+.overrides/*
+!.overrides/build.config.json
 
 # Logs
 logs
@@ -46,3 +49,5 @@ out/
 .copilot/
 .gemini/
 opencode.json
+
+**/__pycache__/

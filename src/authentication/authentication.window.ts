@@ -8,7 +8,9 @@ import type { LoginFlowV2 } from './loginFlowV2.ts'
 import { BrowserWindow } from 'electron'
 import { getAppConfig } from '../app/AppConfig.ts'
 import { applyContextMenu } from '../app/applyContextMenu.js'
+import { credentialStore } from '../app/credentialStore.js'
 import { applyZoom, buildTitle, getScaledWindowSize, getTitleBarSymbolColor, getWindowUrl } from '../app/utils.ts'
+import { enableWebRequestInterceptor } from '../app/webRequestInterceptor.js'
 import { TITLE_BAR_HEIGHT } from '../constants.js'
 import { getBrowserWindowIcon } from '../shared/icons.utils.js'
 import { createLoginFlowV2 } from './loginFlowV2.ts'
@@ -57,6 +59,9 @@ export function createAuthenticationWindow() {
 	let flow: LoginFlowV2 | null = null
 
 	window.webContents.ipc.handle('authentication:loginFlowV2:init', async (event, serverUrl: string) => {
+		if (event.senderFrame?.url !== getWindowUrl('authentication')) {
+			throw new Error('Untrusted login initialization')
+		}
 		flow?.abort()
 		flow = await createLoginFlowV2(serverUrl, (isPolling) => {
 			if (!window.isDestroyed()) {
@@ -66,12 +71,21 @@ export function createAuthenticationWindow() {
 		return flow.loginUrl
 	})
 
-	window.webContents.ipc.handle('authentication:loginFlowV2:login', async () => {
+	window.webContents.ipc.handle('authentication:loginFlowV2:login', async (event) => {
+		if (event.senderFrame?.url !== getWindowUrl('authentication')) {
+			throw new Error('Untrusted login completion')
+		}
 		if (!flow) {
 			throw new Error('Unexpected loginFlowV2 login attempt before init')
 		}
 		try {
-			return await flow.login()
+			const credentials = await flow.login()
+			if (credentials instanceof Error) {
+				return credentials
+			}
+			const account = credentialStore.set(credentials)
+			enableWebRequestInterceptor(credentials.server, { credentials })
+			return account
 		} finally {
 			flow = null
 		}

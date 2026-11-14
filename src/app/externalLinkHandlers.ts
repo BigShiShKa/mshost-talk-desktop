@@ -16,7 +16,7 @@ import { shell } from 'electron'
 import { appData } from './AppData.js'
 import { isExternalUrl } from './utils.ts'
 
-const talkPathRe = new RegExp('^/apps/spreed(?:/(?:not-found|forbidden|duplicate-session))?|/call/[^/]+$')
+const talkPathRe = new RegExp('^(?:/apps/spreed(?:/(?:not-found|forbidden|duplicate-session))?/?|/call/[^/]+)$')
 
 /**
  * Try to extract Talk route from the link
@@ -94,10 +94,10 @@ async function willNavigateExternalLinkHandler(event: Event<WebContentsWillNavig
 	event.preventDefault()
 
 	const talkRoute = tryExtractTalkRoute(url)
-	if (talkRoute && webFrameMain) {
+	if (talkRoute && webFrameMain && !isExternalUrl(webFrameMain.url)) {
 		// Talk route is about to open - navigate in app internally instead
 		// TODO: is it better to use browserWindow API here?
-		await webFrameMain.executeJavaScript(`window.location.hash = '#${talkRoute}'`)
+		await webFrameMain.executeJavaScript(`window.location.hash = ${JSON.stringify('#' + talkRoute)}`)
 		webFrameMain.reload()
 		return
 	}

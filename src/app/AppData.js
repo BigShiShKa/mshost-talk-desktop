@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-// TODO: use safeStorage for credentials
-
 /**
  * @typedef {object} NextcloudVersion
  * @property {string} edition - edition
@@ -49,13 +47,16 @@ export class AppData {
 	 *
 	 * @return {AppData} this
 	 */
-	restore() {
+	async restore() {
 		try {
 			const parsed = JSON.parse(localStorage.getItem(this.storageKey))
 			if (parsed) {
 				this.fromJSON(parsed)
+				this.credentials = await window.TALK_DESKTOP.restoreCredentials(parsed.serverUrl, parsed.credentials)
+				this.persist()
 			}
 		} catch (error) {
+			this.credentials = null
 			// Most likely parsing JSON error
 			console.error('Error on appData restore', error)
 		}
@@ -73,7 +74,7 @@ export class AppData {
 			userMetadata: this.userMetadata,
 			capabilities: this.capabilities,
 			version: this.version,
-			credentials: this.credentials,
+			credentials: this.credentials ? { server: this.credentials.server, user: this.credentials.user } : null,
 			talkHash: this.talkHash,
 			talkHashDirty: this.talkHashDirty,
 		}
@@ -90,7 +91,7 @@ export class AppData {
 		this.userMetadata = obj.userMetadata
 		this.capabilities = obj.capabilities
 		this.version = obj.version
-		this.credentials = obj.credentials
+		this.credentials = obj.credentials ? { server: obj.credentials.server, user: obj.credentials.user } : null
 		this.talkHash = obj.talkHash
 		this.talkHashDirty = obj.talkHashDirty
 		return this

@@ -169,8 +169,6 @@ async function login() {
 		loginFlowV2Url.value = null
 	}
 
-	// Add credentials to the request
-	window.TALK_DESKTOP.enableWebRequestInterceptor(serverUrl.value, { credentials })
 	// Save credentials
 	appData.credentials = credentials
 

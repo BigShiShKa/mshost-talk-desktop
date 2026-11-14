@@ -66,11 +66,12 @@ const TALK_DESKTOP = {
 		return () => ipcRenderer.removeListener('app:prefersContrastMore:change', handler)
 	},
 	/**
-	 * Enable web request intercepting
+	 * Restore credentials in main, migrating legacy storage if needed
 	 *
-	 * @type {typeof import('./app/webRequestInterceptor').enableWebRequestInterceptor}
+	 * @param {string} server - Server URL
+	 * @param {object} legacy - Previous account record
 	 */
-	enableWebRequestInterceptor: (...args) => ipcRenderer.invoke('app:enableWebRequestInterceptor', ...args),
+	restoreCredentials: (server, legacy) => ipcRenderer.invoke('authentication:restore', server, legacy),
 	/**
 	 * Disable web request intercepting
 	 *
@@ -186,7 +187,7 @@ const TALK_DESKTOP = {
 	/**
 	 * Login via initialized login flow v2: wait for the flow to complete and get the result
 	 *
-	 * @return {Promise<import('./authentication/loginFlow.utils.ts').Credentials | Error>}
+	 * @return {Promise<Omit<import('./authentication/loginFlow.utils.ts').Credentials, 'password'> | Error>}
 	 */
 	loginFlowV2Login: () => ipcRenderer.invoke('authentication:loginFlowV2:login'),
 	/**

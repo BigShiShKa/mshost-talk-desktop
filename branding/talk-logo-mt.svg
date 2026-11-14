@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 MSHost contributors
+     SPDX-License-Identifier: AGPL-3.0-or-later -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="700" viewBox="0 100 1024 700">
+  <defs>
+    <linearGradient id="cloud" x1="96" y1="420" x2="930" y2="530" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00d3df"/>
+      <stop offset="0.46" stop-color="#159dff"/>
+      <stop offset="1" stop-color="#a000ff"/>
+    </linearGradient>
+  </defs>
+  <path d="M286 720H748C851 720 930 644 930 548C930 452 860 376 765 370C739 258 650 180 537 180C422 180 330 260 306 365C189 360 96 438 96 544C96 645 179 720 286 720Z"
+        fill="none" stroke="url(#cloud)" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#fff" transform="translate(0 -5)">
+    <path d="M260 662V422H319L378 527L437 422H496V662H436V531L378 628L320 531V662Z"/>
+    <path d="M535 422H781V478H688V662H628V478H535Z"/>
+  </g>
+</svg>

@@ -25,13 +25,12 @@ if (window.systemInfo.isMac) {
 	quitButton.classList.add('quit_mac')
 }
 
-appData.restore()
+await appData.restore()
 
 initGlobals()
 applyAxiosInterceptors()
 
 if (appData.credentials) {
-	await window.TALK_DESKTOP.enableWebRequestInterceptor(appData.serverUrl, { credentials: appData.credentials })
 	await refetchAppDataWithRetry(appData)
 	// Init accounts in case this is the first run with the new config
 	// TODO: replace with a proper migration when the migration system supports it

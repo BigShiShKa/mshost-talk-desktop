@@ -13,6 +13,7 @@ const { appData } = require('./app/AppData.js')
 const { registerAppProtocolHandler } = require('./app/appProtocol.ts')
 const { verifyCertificate, promptCertificateTrust } = require('./app/certificate.service.ts')
 const { cli } = require('./app/cli.ts')
+const { credentialStore } = require('./app/credentialStore.js')
 const { openChromeWebRtcInternals } = require('./app/dev.utils.ts')
 const { triggerDownloadUrl } = require('./app/downloads.ts')
 const { setupReleaseNotificationScheduler, checkForUpdate } = require('./app/githubRelease.service.ts')
@@ -20,7 +21,7 @@ const { setupLaunchAtStartup } = require('./app/launchAtStartup.config.ts')
 const { runMigrations } = require('./app/migration.service.ts')
 const { systemInfo, isMac, isWindows, isSameExecution, isSquirrel, relaunchApp } = require('./app/system.utils.ts')
 const { applyTheme } = require('./app/theme.config.ts')
-const { buildTitle, onReadyToShow } = require('./app/utils.ts')
+const { buildTitle, onReadyToShow, getWindowUrl } = require('./app/utils.ts')
 const { enableWebRequestInterceptor, disableWebRequestInterceptor } = require('./app/webRequestInterceptor.js')
 const { createAuthenticationWindow } = require('./authentication/authentication.window.ts')
 const { createCallboxWindow } = require('./callbox/callbox.window.ts')
@@ -73,14 +74,13 @@ ipcMain.handle('app:getSystemL10n', () => ({
 	// Note: Linux may have C (POSIX) locale, which results in an empty preferred languages list
 	language: app.getPreferredSystemLanguages()[0]?.replace('-', '_') ?? 'en_US',
 }))
-ipcMain.handle('app:enableWebRequestInterceptor', (event, ...args) => enableWebRequestInterceptor(...args))
 ipcMain.handle('app:disableWebRequestInterceptor', (event, ...args) => disableWebRequestInterceptor(...args))
 ipcMain.handle('app:setBadgeCount', async (event, count) => app.setBadgeCount(count))
 ipcMain.on('app:relaunch', () => relaunchApp())
 ipcMain.handle('app:config:get', (event, key) => getAppConfig(key))
 ipcMain.handle('app:config:set', (event, key, value) => setAppConfig(key, value))
 ipcMain.on('app:grantUserGesturedPermission', (event, id) => {
-	return event.sender.executeJavaScript(`document.getElementById('${id}')?.click()`, true)
+	return event.sender.executeJavaScript(`document.getElementById(${JSON.stringify(String(id))})?.click()`, true)
 })
 ipcMain.on('app:toggleDevTools', (event) => event.sender.toggleDevTools())
 ipcMain.handle('app:anything', () => { /* Put any code here to run it from UI */ })
@@ -224,19 +224,28 @@ app.whenReady().then(async () => {
 	onReadyToShow(mainWindow, () => mainWindow.show())
 
 	ipcMain.once('appData:receive', async (event, newAppData) => {
+		if (event.sender !== mainWindow.webContents || event.senderFrame?.url !== getWindowUrl('welcome')) {
+			return
+		}
 		appData.fromJSON(newAppData)
+		const credentials = appData.credentials ? credentialStore.get(appData.serverUrl) : null
+		if (!credentials || credentials.user !== appData.credentials?.user) {
+			appData.credentials = null
+		}
 
 		const welcomeWindow = mainWindow
 
 		if (appData.credentials) {
 			// User is authenticated - setup and start main window
 			enableWebRequestInterceptor(appData.serverUrl, {
-				credentials: appData.credentials,
+				credentials,
 			})
 			mainWindow = createTalkWindow()
 			createMainWindow = createTalkWindow
 		} else {
 			// User is unauthenticated - start login window
+			credentialStore.clear()
+			disableWebRequestInterceptor()
 			await welcomeWindow.webContents.session.clearStorageData()
 			mainWindow = createAuthenticationWindow()
 			createMainWindow = createAuthenticationWindow
@@ -276,6 +285,13 @@ app.whenReady().then(async () => {
 	ipcMain.handle('talk:focus', async () => focusMainWindow())
 
 	ipcMain.handle('authentication:login', async (event, newAppData) => {
+		if (event.sender !== mainWindow.webContents || event.senderFrame?.url !== getWindowUrl('authentication')) {
+			throw new Error('Untrusted login')
+		}
+		const credentials = credentialStore.get(newAppData.serverUrl)
+		if (!credentials || credentials.user !== newAppData.credentials?.user) {
+			throw new Error('Missing stored credentials')
+		}
 		appData.fromJSON(newAppData)
 		mainWindow.close()
 		mainWindow = createTalkWindow()
@@ -285,6 +301,8 @@ app.whenReady().then(async () => {
 
 	ipcMain.handle('authentication:logout', async () => {
 		if (createMainWindow === createTalkWindow) {
+			credentialStore.clear()
+			disableWebRequestInterceptor()
 			appData.reset()
 			await mainWindow.webContents.session.clearStorageData()
 			await mainWindow.webContents.session.clearCache()

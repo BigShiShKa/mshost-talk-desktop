@@ -1,14 +1,14 @@
 {
-  "name": "talk-desktop",
-  "version": "2.3.4",
+  "name": "mshost-talk-desktop",
+  "version": "2.3.4-alpha.3",
   "private": true,
   "bugs": {
-    "url": "https://github.com/nextcloud/talk-desktop/issues",
-    "create": "https://github.com/nextcloud/talk-desktop/issues/new/choose"
+    "url": "https://github.com/BigShiShKa/mshost-talk-desktop/issues",
+    "create": "https://github.com/BigShiShKa/mshost-talk-desktop/issues/new/choose"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nextcloud/talk-desktop"
+    "url": "https://github.com/BigShiShKa/mshost-talk-desktop"
   },
   "license": "AGPL-3.0-or-later",
   "author": {
@@ -132,6 +132,6 @@
     "esbuild": true,
     "sharp": true
   },
-  "desktopName": "com.nextcloud.talk.desktop",
-  "productName": "Nextcloud Talk"
+  "desktopName": "org.mshostcloud.talk.desktop",
+  "productName": "MSHost Talk"
 }

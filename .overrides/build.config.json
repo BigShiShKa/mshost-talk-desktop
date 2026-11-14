@@ -1,0 +1,16 @@
+{
+	"applicationName": "MSHost Talk",
+	"description": "MSHost Talk — чаты, аудио- и видеозвонки",
+	"domain": "https://cloud.mshostcloud.org",
+	"enforceDomain": false,
+	"brandColor": "#00BCD4",
+	"brandGradient": "linear-gradient(40deg, #00c9df 0%, #8b25ff 100%)",
+	"helpUrl": "https://cloud.mshostcloud.org",
+	"privacyUrl": "",
+	"winAppId": "org.mshostcloud.talk",
+	"windowsExe": true,
+	"windowsMsi": false,
+	"macosDmg": false,
+	"linuxFlatpak": false,
+	"linuxZip": false
+}

@@ -5,8 +5,10 @@
 
 import { BrowserWindow } from 'electron'
 import { getAppConfig } from '../app/AppConfig.ts'
+import { credentialStore } from '../app/credentialStore.js'
 import { isMac } from '../app/system.utils.ts'
 import { applyZoom, getScaledWindowSize, getWindowUrl } from '../app/utils.ts'
+import { enableWebRequestInterceptor } from '../app/webRequestInterceptor.js'
 import { BUILD_CONFIG } from '../shared/build.config.ts'
 import { getBrowserWindowIcon } from '../shared/icons.utils.js'
 
@@ -41,6 +43,20 @@ export function createWelcomeWindow() {
 	}
 
 	applyZoom(window)
+	window.webContents.ipc.handle('authentication:restore', (event, serverUrl, legacy) => {
+		if (event.senderFrame?.url !== getWindowUrl('welcome')) {
+			throw new Error('Untrusted credential migration')
+		}
+		if (legacy?.password && legacy.server === serverUrl) {
+			credentialStore.set(legacy)
+		}
+		const credentials = credentialStore.get(serverUrl)
+		if (!credentials) {
+			return null
+		}
+		enableWebRequestInterceptor(serverUrl, { credentials })
+		return { server: credentials.server, user: credentials.user }
+	})
 
 	window.loadURL(getWindowUrl('welcome'))
 
